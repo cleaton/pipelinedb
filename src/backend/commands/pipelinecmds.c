@@ -354,6 +354,23 @@ record_dependencies(Oid cvoid, Oid matreloid, Oid viewoid,
 	recordDependencyOnExpr(&dependent, (Node *) query, NIL, DEPENDENCY_NORMAL);
 }
 
+static void set_replica_identity_full(Oid matrel_oid, RangeVar *matrel)
+{
+	AlterTableStmt *stmt = makeNode(AlterTableStmt);
+	AlterTableCmd *cmd = makeNode(AlterTableCmd);
+
+	ReplicaIdentityStmt *rep = makeNode(ReplicaIdentityStmt);
+	rep->identity_type = REPLICA_IDENTITY_FULL;
+
+	cmd->subtype = AT_ReplicaIdentity;
+	cmd->def = (Node*) rep;
+
+	stmt->relation = matrel;
+	stmt->cmds = list_make1(cmd);
+
+	AlterTable(matrel_oid, AccessExclusiveLock, stmt);
+}
+
 /*
  * ExecCreateContViewStmt
  *
@@ -482,7 +499,10 @@ ExecCreateContViewStmt(CreateContViewStmt *stmt, const char *querystring)
 	matreloid = DefineRelation(create_stmt, RELKIND_RELATION, InvalidOid);
 	CommandCounterIncrement();
 
-	toast_options = transformRelOptions((Datum) 0, create_stmt->options, "toast",
+	set_replica_identity_full(matreloid, matrel);
+
+	toast_options = transformRelOptions((Datum) 0,
+			create_stmt->options, "toast",
 			validnsps, true, false);
 
 	(void) heap_reloptions(RELKIND_TOASTVALUE, toast_options,
