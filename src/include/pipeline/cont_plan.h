@@ -36,9 +36,12 @@ extern FuncExpr *GetGroupHashIndexExpr(int group_len, ResultRelInfo *ri);
 extern PlannedStmt *GetCombinerLookupPlan(ContinuousView *view);
 extern PlannedStmt *GetContinuousViewOverlayPlan(ContinuousView *view);
 
+extern PlannedStmt *GetContinuousViewPlanMod(ContinuousView *view);
+
 extern void SetTupleBufferBatchReader(PlanState *planstate, TupleBufferBatchReader *reader);
 extern EState *CreateEState(QueryDesc *query_desc);
 extern void SetEStateSnapshot(EState *estate);
 extern void UnsetEStateSnapshot(EState *estate);
+extern Query* GetCVPQuery(ContinuousView *view);
 
 #endif

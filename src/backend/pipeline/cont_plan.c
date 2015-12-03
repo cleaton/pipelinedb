@@ -131,6 +131,31 @@ get_worker_plan(ContinuousView *view)
 }
 
 PlannedStmt*
+GetContinuousViewPlanMod(ContinuousView *view)
+{
+	SelectStmt	*selectstmt;
+	SelectStmt	*viewstmt;
+
+	selectstmt = get_worker_select_stmt(view, &viewstmt);
+	selectstmt = viewstmt;
+
+	return get_plan_from_stmt(view->id, (Node *) selectstmt, 
+							  view->query, false);
+}
+
+Query *
+GetCVPQuery(ContinuousView *view)
+{
+	SelectStmt	*selectstmt;
+	SelectStmt	*viewstmt;
+
+	selectstmt = get_worker_select_stmt(view, &viewstmt);
+	selectstmt = viewstmt;
+
+	return parse_analyze((Node *) selectstmt, "SELECT", 0, 0);
+}
+
+PlannedStmt*
 GetContinuousViewOverlayPlan(ContinuousView *view)
 {
 	PlannedStmt *result;

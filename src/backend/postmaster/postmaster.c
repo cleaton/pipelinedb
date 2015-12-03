@@ -5536,6 +5536,7 @@ do_start_bgworker(RegisteredBgWorker *rw)
 			/* Do NOT release postmaster's working memory context */
 
 			MyBgworkerEntry = &rw->rw_worker;
+
 			StartBackgroundWorker();
 			break;
 #endif

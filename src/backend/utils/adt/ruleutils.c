@@ -465,6 +465,43 @@ deparse_query_def(Query *query)
 	return sql;
 }
 
+char *
+deparse_query_def_target_list(Query *query)
+{
+	StringInfo buf = makeStringInfo();
+	deparse_context context;
+	deparse_namespace dpns;
+	char *sql;
+
+	/*
+	 * Before we begin to examine the query, acquire locks on referenced
+	 * relations, and fix up deleted columns in JOIN RTEs.  This ensures
+	 * consistent results.  Note we assume it's OK to scribble on the passed
+	 * querytree!
+	 *
+	 * We are only deparsing the query (we are not about to execute it), so we
+	 * only need AccessShareLock on the relations it mentions.
+	 */
+	AcquireRewriteLocks(query, false, false);
+
+	context.buf = buf;
+	context.namespaces = list_make1(&dpns);
+	context.windowClause = NIL;
+	context.windowTList = NIL;
+	context.varprefix = list_length(query->rtable) != 1;
+	context.prettyFlags = PRETTYFLAG_INDENT;
+	context.wrapColumn = WRAP_COLUMN_DEFAULT;
+	context.indentLevel = 0;
+
+	set_deparse_for_query(&dpns, query, NIL);
+	get_target_list(query->targetList, &context, NULL);
+	sql = buf->data;
+
+	pfree(buf);
+
+	return sql;
+}
+
 /* ----------
  * get_ruledef			- Do it all and return a text
  *				  that could be used as a statement
