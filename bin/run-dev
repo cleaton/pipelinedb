@@ -100,7 +100,7 @@ def main(args):
   if args.stmts:
     time.sleep(0.5)
     for stmt in args.stmts:
-      p = subprocess.Popen(['psql', '-c', stmt], stdout=subprocess.PIPE)
+      p = subprocess.Popen(['psql', '-f', stmt], stdout=subprocess.PIPE)
       print stmt.upper()
 
   POSTMASTER.wait()

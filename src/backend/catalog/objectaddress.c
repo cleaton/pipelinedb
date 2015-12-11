@@ -53,7 +53,9 @@
 #include "catalog/pg_type.h"
 #include "catalog/pg_user_mapping.h"
 #include "catalog/pipeline_query.h"
+#include "catalog/pipeline_alert.h"
 #include "catalog/pipeline_stream_fn.h"
+#include "catalog/pipeline_alert_fn.h"
 #include "commands/dbcommands.h"
 #include "commands/defrem.h"
 #include "commands/event_trigger.h"
@@ -417,7 +419,19 @@ static const ObjectPropertyType ObjectProperty[] =
 		Anum_pg_type_typacl,
 		ACL_KIND_TYPE,
 		true
-	}
+	},
+	{
+		PipelineAlertRelationId,
+		PipelineAlertOidIndexId,
+		PIPELINEALERTOID,
+		PIPELINEALERTNAMESPACENAME,
+		Anum_pipeline_alert_name,
+		Anum_pipeline_alert_namespace,
+		InvalidAttrNumber,
+		InvalidAttrNumber,
+		-1,
+		true
+	},
 };
 
 static ObjectAddress get_object_address_unqualified(ObjectType objtype,
@@ -524,6 +538,13 @@ get_object_address(ObjectType objtype, List *objname, List *objargs,
 			case OBJECT_CONSTRAINT:
 				address = get_object_address_relobject(objtype, objname,
 													   &relation, missing_ok);
+				break;
+			case OBJECT_ALERT:
+
+				address.classId = PipelineAlertRelationId;
+				address.objectId = get_alert_oid(objname, missing_ok);
+				address.objectSubId = 0;
+
 				break;
 			case OBJECT_DATABASE:
 			case OBJECT_EXTENSION:

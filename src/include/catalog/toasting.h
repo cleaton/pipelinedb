@@ -69,6 +69,8 @@ DECLARE_TOAST(pipeline_query, 6000, 6001);
 DECLARE_TOAST(pipeline_stream, 6002, 6003);
 DECLARE_TOAST(pipeline_tstate, 6004, 6005);
 DECLARE_TOAST(pipeline_database, 6006, 6007);
+DECLARE_TOAST(pipeline_alert, 6008, 6009);
+
 #define PipelineDatabaseToastTable 6006
 #define PipelineDatabaseToastIndex 6007
 

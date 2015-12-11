@@ -1242,7 +1242,8 @@ typedef enum ObjectType
 	OBJECT_TYPE,
 	OBJECT_VIEW,
 	OBJECT_CONTINUOUS_VIEW,
-	OBJECT_STREAM
+	OBJECT_STREAM,
+	OBJECT_ALERT
 } ObjectType;
 
 /* ----------------------
@@ -2800,6 +2801,14 @@ typedef struct CreateContViewStmt
 	Node 			*query;
 
 } CreateContViewStmt;
+
+typedef struct CreateAlertStmt
+{
+	NodeTag			type;
+	IntoClause 		*into;
+	Node 			*query;
+
+} CreateAlertStmt;
 
 typedef struct ExplainContViewStmt
 {

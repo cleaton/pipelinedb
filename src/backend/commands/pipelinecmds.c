@@ -769,3 +769,8 @@ void ExecDeactivateStmt(DeactivateStmt *stmt, ProcessUtilityContext context)
 {
 	set_cq_enabled(false, context);
 }
+
+void ExecCreateAlertStmt(CreateAlertStmt *stmt, const char *querystring)
+{
+	//
+}

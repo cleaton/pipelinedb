@@ -211,6 +211,7 @@ check_xact_readonly(Node *parsetree)
 		case T_CreateForeignTableStmt:
 		case T_SecLabelStmt:
 		case T_CreateContViewStmt:
+		case T_CreateAlertStmt:
 		case T_CreateStreamStmt:
 		case T_TruncateContViewStmt:
 			PreventCommandIfReadOnly(CreateCommandTag(parsetree));
@@ -507,6 +508,10 @@ standard_ProcessUtility(Node *parsetree,
 
 		case T_CreateContViewStmt:
 			ExecCreateContViewStmt((CreateContViewStmt *) parsetree, queryString);
+			break;
+
+		case T_CreateAlertStmt:
+			ExecCreateAlertStmt((CreateContViewStmt *) parsetree, queryString);
 			break;
 
 		case T_DropTableSpaceStmt:
@@ -1742,6 +1747,9 @@ AlterObjectTypeCommandTag(ObjectType objtype)
 		case OBJECT_STREAM:
 			tag = "ALTER STREAM";
 			break;
+		case OBJECT_ALERT:
+			tag = "ALTER ALERT";
+			break;
 		default:
 			tag = "???";
 			break;
@@ -2024,6 +2032,9 @@ CreateCommandTag(Node *parsetree)
 				case OBJECT_STREAM:
 					tag = "DROP STREAM";
 					break;
+				case OBJECT_ALERT:
+					tag = "DROP ALERT";
+					break;
 				default:
 					tag = "???";
 			}
@@ -2226,6 +2237,10 @@ CreateCommandTag(Node *parsetree)
 
 		case T_CreateContViewStmt:
 			tag = "CREATE CONTINUOUS VIEW";
+			break;
+
+		case T_CreateAlertStmt:
+			tag = "CREATE ALERT";
 			break;
 
 		case T_CreateTableAsStmt:
@@ -2998,6 +3013,7 @@ GetCommandLogLevel(Node *parsetree)
 		/* PipelineDB */
 		case T_CreateContViewStmt:
 		case T_CreateStreamStmt:
+		case T_CreateAlertStmt:
 			lev = LOGSTMT_DDL;
 			break;
 

@@ -127,7 +127,7 @@
 
 /* These variables define the actually active state: */
 
-static List *activeSearchPath = NIL;
+List *activeSearchPath = NIL;
 
 /* default place to create stuff; if InvalidOid, no default */
 static Oid	activeCreationNamespace = InvalidOid;
@@ -174,7 +174,7 @@ static List *overrideStack = NIL;
  * we either haven't made the TEMP namespace yet, or have successfully
  * committed its creation, depending on whether myTempNamespace is valid.
  */
-static Oid	myTempNamespace = InvalidOid;
+Oid	myTempNamespace = InvalidOid;
 
 static Oid	myTempToastNamespace = InvalidOid;
 
@@ -188,7 +188,6 @@ char	   *namespace_search_path = NULL;
 
 
 /* Local functions */
-static void recomputeNamespacePath(void);
 static void InitTempTableNamespace(void);
 static void RemoveTempRelations(Oid tempNamespaceId);
 static void RemoveTempRelationsCallback(int code, Datum arg);
@@ -3429,7 +3428,7 @@ FindDefaultConversionProc(int32 for_encoding, int32 to_encoding)
 /*
  * recomputeNamespacePath - recompute path derived variables if needed.
  */
-static void
+void
 recomputeNamespacePath(void)
 {
 	Oid			roleid = GetUserId();

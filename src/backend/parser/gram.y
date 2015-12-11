@@ -252,7 +252,7 @@ static Node *makeRecursiveViewSelect(char *relname, List *aliases, Node *query);
 		AlterTSConfigurationStmt AlterTSDictionaryStmt
 		CreateMatViewStmt RefreshMatViewStmt
 		CreateContViewStmt ExplainContViewStmt CreateStreamStmt
-		TruncateContViewStmt
+		CreateAlertStmt TruncateContViewStmt
 
 %type <node>	select_no_parens select_with_parens select_clause
 				simple_select values_clause
@@ -357,7 +357,7 @@ static Node *makeRecursiveViewSelect(char *relname, List *aliases, Node *query);
 %type <defelt>	fdw_option
 
 %type <range>	OptTempTableName
-%type <into>	into_clause create_as_target create_cv_target create_mv_target
+%type <into>	into_clause create_as_target create_cv_target create_mv_target create_alert_target
 
 %type <defelt>	createfunc_opt_item common_func_opt_item dostmt_opt_item
 %type <fun_param> func_arg func_arg_with_default table_func_column aggr_arg
@@ -528,7 +528,7 @@ static Node *makeRecursiveViewSelect(char *relname, List *aliases, Node *query);
 
 /* ordinary key words in alphabetical order */
 %token <keyword> ABORT_P ABSOLUTE_P ACCESS ACTION ACTIVATE ADD_P ADMIN AFTER
-	AGGREGATE ALL ALSO ALTER ALWAYS ANALYSE ANALYZE AND ANY ARRAY AS ASC
+	AGGREGATE ALERT ALL ALSO ALTER ALWAYS ANALYSE ANALYZE AND ANY ARRAY AS ASC
 	ASSERTION ASSIGNMENT ASYMMETRIC AT ATTRIBUTE AUTHORIZATION
 
 	BACKWARD BEFORE BEGIN_P BETWEEN BIGINT BINARY BIT
@@ -751,6 +751,7 @@ stmt :
 			| CommentStmt
 			| ConstraintsSetStmt
 			| CopyStmt
+			| CreateAlertStmt
 			| CreateAsStmt
 			| CreateAssertStmt
 			| CreateCastStmt
@@ -2809,6 +2810,32 @@ CreateStreamStmt:	CREATE STREAM qualified_name '(' OptTableElementList ')'
 					n->ft.servername = PIPELINE_STREAM_SERVER;
 					n->is_inferred = false;
 					$$ = (Node *)n;
+				}
+		;
+
+/*****************************************************************************
+ *
+ *		ALERT:
+ *				CREATE ALERT qualified_name AS SelectStmt
+ *
+ *****************************************************************************/
+
+CreateAlertStmt: CREATE ALERT create_alert_target AS SelectStmt
+				{
+					CreateAlertStmt *n = makeNode(CreateAlertStmt);
+					n->into = $3;
+					n->query = $5;
+					$$ = (Node *) n;
+				}
+		;
+
+create_alert_target:
+		qualified_name opt_reloptions OptTableSpace
+				{
+					$$ = makeNode(IntoClause);
+					$$->rel = $1;
+					$$->options = $2;
+					$$->tableSpaceName = $3;
 				}
 		;
 		
@@ -5413,6 +5440,7 @@ drop_type:	TABLE									{ $$ = OBJECT_TABLE; }
 			| MATERIALIZED VIEW						{ $$ = OBJECT_MATVIEW; }
 			| INDEX									{ $$ = OBJECT_INDEX; }
 			| FOREIGN TABLE							{ $$ = OBJECT_FOREIGN_TABLE; }
+			| ALERT 							 	{ $$ = OBJECT_ALERT; }
 			| EVENT TRIGGER 						{ $$ = OBJECT_EVENT_TRIGGER; }
 			| TYPE_P								{ $$ = OBJECT_TYPE; }
 			| DOMAIN_P								{ $$ = OBJECT_DOMAIN; }
@@ -12938,6 +12966,7 @@ unreserved_keyword:
 			| ADMIN
 			| AFTER
 			| AGGREGATE
+			| ALERT
 			| ALSO
 			| ALTER
 			| ALWAYS

@@ -4603,6 +4603,10 @@ copyObject(const void *from)
 		case T_CreateContViewStmt:
 			retval = _copyCreateContViewStmt(from);
 			break;
+		case T_CreateAlertStmt:
+//			retval = _copyCreateAlertStmt(from);
+			break;
+
 		case T_A_Expr:
 			retval = _copyAExpr(from);
 			break;

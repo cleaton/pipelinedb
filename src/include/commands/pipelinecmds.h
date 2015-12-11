@@ -31,5 +31,6 @@ extern void ExecExplainContViewStmt(ExplainContViewStmt *stmt, const char *query
 
 extern void ExecActivateStmt(ActivateStmt *stmt, ProcessUtilityContext context);
 extern void ExecDeactivateStmt(DeactivateStmt *stmt, ProcessUtilityContext context);
+extern void ExecCreateAlertStmt(CreateAlertStmt *stmt, const char *querystring);
 
 #endif   /* PIPELINECMDS_H */

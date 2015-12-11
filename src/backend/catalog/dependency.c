@@ -77,6 +77,7 @@
 #include "utils/lsyscache.h"
 #include "utils/syscache.h"
 #include "utils/tqual.h"
+#include "catalog/pipeline_alert_fn.h"
 
 
 /*
@@ -1390,6 +1391,10 @@ doDeletion(const ObjectAddress *object, int flags)
 			RemoveContinuousViewById(object->objectId);
 			break;
 
+		case OCLASS_ALERT:
+			RemoveAlertById(object->objectId);
+			break;
+
 		case OCLASS_STREAM:
 			RemovePipelineStreamById(object->objectId);
 			break;
@@ -2515,6 +2520,9 @@ getObjectClass(const ObjectAddress *object)
 
 		case PipelineCombineRelationId:
 			return OCLASS_COMBINE;
+
+		case PipelineAlertRelationId:
+			return OCLASS_ALERT;
 	}
 
 	/* shouldn't get here */

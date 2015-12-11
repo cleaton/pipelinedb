@@ -33,6 +33,7 @@ extern Oid DefineContinuousView(RangeVar *name, Query *query, Oid matrel, bool g
 extern HeapTuple GetPipelineQueryTuple(RangeVar *name);
 extern SelectStmt *GetContSelectStmt(RangeVar *rv);
 extern bool IsAContinuousView(RangeVar *name);
+
 extern bool ContainsSlidingWindowContinuousView(List *nodes);
 extern bool IsAMatRel(RangeVar *name, RangeVar **cvname);
 extern bool RelIdIsAMatRel(Oid relid);
@@ -44,5 +45,7 @@ extern void RemoveContinuousViewById(Oid oid);
 extern ContinuousView *GetContinuousView(Oid id);
 extern Bitmapset *GetAllContinuousViewIds(void);
 extern Bitmapset *GetAdhocContinuousViewIds(void);
+
+extern bool IsAContinuousView(RangeVar *name);
 
 #endif

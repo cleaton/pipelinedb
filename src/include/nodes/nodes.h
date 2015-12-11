@@ -456,7 +456,8 @@ typedef enum NodeTag
 	T_ExplainContViewStmt,
 	T_TruncateContViewStmt,
 	T_ActivateStmt,
-	T_DeactivateStmt
+	T_DeactivateStmt,
+	T_CreateAlertStmt
 } NodeTag;
 
 /*

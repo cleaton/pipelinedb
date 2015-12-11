@@ -69,6 +69,7 @@
 #include "catalog/pipeline_query.h"
 #include "catalog/pipeline_stream.h"
 #include "catalog/pipeline_tstate.h"
+#include "catalog/pipeline_alert.h"
 #include "utils/rel.h"
 #include "utils/catcache.h"
 #include "utils/syscache.h"
@@ -570,6 +571,28 @@ static const struct cachedesc cacheinfo[] = {
 			0
 		},
 		8
+	},
+	{PipelineAlertRelationId,	/* PIPELINEALERTOID */
+		PipelineAlertOidIndexId,
+		1,
+		{
+			ObjectIdAttributeNumber,
+			0,
+			0,
+			0
+		},
+		2048
+	},
+	{PipelineAlertRelationId,	/* PIPELINEALERTNAMESPACENAME, */
+	 PipelineAlertNamespaceNameIndexId,
+		2,
+		{
+			Anum_pipeline_alert_namespace,
+			Anum_pipeline_alert_name,
+			0,
+			0
+		},
+		2048
 	},
 	{PipelineCombineRelationId,	/* PIPELINECOMBINEOID */
 		PipelineCombineOidIndexId,

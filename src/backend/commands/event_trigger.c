@@ -69,6 +69,7 @@ typedef enum
 
 static event_trigger_support_data event_trigger_support[] = {
 	{"AGGREGATE", true},
+	{"ALERT", true},
 	{"CAST", true},
 	{"CONSTRAINT", true},
 	{"COLLATION", true},

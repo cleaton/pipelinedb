@@ -323,6 +323,12 @@ DECLARE_UNIQUE_INDEX(pipeline_query_id_index, 4241, on pipeline_query using btre
 DECLARE_UNIQUE_INDEX(pipeline_query_oid_index, 4253, on pipeline_query using btree(oid oid_ops));
 #define PipelineQueryOidIndexId  4253
 
+DECLARE_UNIQUE_INDEX(pipeline_alert_oid_index, 4302, on pipeline_alert using btree(oid oid_ops));
+#define PipelineAlertOidIndexId  4302
+
+DECLARE_UNIQUE_INDEX(pipeline_alert_namespace_name_index, 4316, on pipeline_alert using btree(namespace oid_ops, name name_ops));
+#define PipelineAlertNamespaceNameIndexId 4316
+
 DECLARE_UNIQUE_INDEX(pipeline_query_namespace_matrel_index, 4255, on pipeline_query using btree(namespace oid_ops, matrel oid_ops));
 #define PipelineQueryNamespaceMatrelIndexId					4255
 

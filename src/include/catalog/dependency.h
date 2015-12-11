@@ -152,6 +152,7 @@ typedef enum ObjectClass
 	OCLASS_CONTINUOUS_VIEW, 	/* pipeline_query */
 	OCLASS_STREAM, 				/* pipeline_stream */
 	OCLASS_COMBINE,				/* pipeline_combine */
+	OCLASS_ALERT,				/* pipeline_combine */
 	MAX_OCLASS					/* MUST BE LAST */
 } ObjectClass;
 
