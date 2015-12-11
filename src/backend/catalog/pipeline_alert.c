@@ -17,6 +17,7 @@
 #include "utils/syscache.h"
 #include "utils/relcache.h"
 #include "access/heapam.h"
+#include "access/xact.h"
 
 // TODO - refactor into get_oid_from_table, and put back into 
 // catalog/namespace.c
@@ -79,6 +80,8 @@ get_alert_oid(List *name, bool missing_ok)
 void
 RemoveAlertById(Oid oid)
 {
+	// XXX - do push sequence notify.
+
 	Relation pipeline_alert;
 	HeapTuple tuple;
 
@@ -93,4 +96,32 @@ RemoveAlertById(Oid oid)
 	ReleaseSysCache(tuple);
 	CommandCounterIncrement();
 	heap_close(pipeline_alert, NoLock); // drop after xact
+}
+
+HeapTuple
+GetPipelineAlertTuple(RangeVar *name)
+{
+	HeapTuple tuple;
+	Oid namespace;
+
+	if (name->schemaname == NULL)
+		namespace = RangeVarGetCreationNamespace(name);
+	else
+		namespace = get_namespace_oid(name->schemaname, false);
+
+	Assert(OidIsValid(namespace));
+
+	tuple = SearchSysCache2(PIPELINEALERTNAMESPACENAME, ObjectIdGetDatum(namespace), CStringGetDatum(name->relname));
+
+	return tuple;
+}
+
+bool
+IsAnAlert(RangeVar *name)
+{
+	HeapTuple tuple = GetPipelineAlertTuple(name);
+	if (!HeapTupleIsValid(tuple))
+		return false;
+	ReleaseSysCache(tuple);
+	return true;
 }

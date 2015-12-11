@@ -60,6 +60,8 @@
 #include "utils/rel.h"
 #include "utils/snapmgr.h"
 #include "utils/syscache.h"
+#include "catalog/pipeline_alert.h"
+#include "catalog/pipeline_alert_fn.h"
 
 #define CQ_MATREL_INDEX_TYPE "btree"
 #define DEFAULT_TYPEMOD -1
@@ -770,7 +772,36 @@ void ExecDeactivateStmt(DeactivateStmt *stmt, ProcessUtilityContext context)
 	set_cq_enabled(false, context);
 }
 
-void ExecCreateAlertStmt(CreateAlertStmt *stmt, const char *querystring)
+void ExecCreateAlertStmt(CreateAlertStmt *stmt, const char *query_str)
 {
-	//
+	Oid result;
+	HeapTuple tup;
+	bool nulls[Natts_pipeline_alert];
+	Datum values[Natts_pipeline_alert];
+	NameData name_data;
+	Relation pipeline_alert;
+	Oid namespace;
+
+	RangeVar *alert = stmt->into->rel;
+
+	if (IsAnAlert(alert))
+		elog(ERROR, "alert %s already exists", alert->relname);
+
+	namespace = RangeVarGetCreationNamespace(alert);
+
+	pipeline_alert = heap_open(PipelineAlertRelationId, AccessExclusiveLock);
+	namestrcpy(&name_data, alert->relname);
+
+	values[Anum_pipeline_alert_name - 1] = NameGetDatum(&name_data);
+	values[Anum_pipeline_alert_namespace - 1] = ObjectIdGetDatum(namespace);
+	values[Anum_pipeline_alert_query - 1] = CStringGetTextDatum(query_str);
+
+	MemSet(nulls, 0, sizeof(nulls));
+	tup = heap_form_tuple(pipeline_alert->rd_att, values, nulls);
+
+	result = simple_heap_insert(pipeline_alert, tup);
+	CatalogUpdateIndexes(pipeline_alert, tup);
+	CommandCounterIncrement();
+
+	heap_close(pipeline_alert, NoLock); // unlock after transaction
 }

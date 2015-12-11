@@ -48,8 +48,9 @@ typedef FormData_pipeline_alert *Form_pipeline_alert;
  *		compiler constants for pipeline_alert
  * ----------------
  */
-#define Natts_pipeline_alert			2
+#define Natts_pipeline_alert			3
 #define Anum_pipeline_alert_namespace	1
 #define Anum_pipeline_alert_name		2
+#define Anum_pipeline_alert_query 		3
 
 #endif
