@@ -18,10 +18,13 @@
 #include "utils/relcache.h"
 #include "access/heapam.h"
 #include "access/xact.h"
+#include "utils/builtins.h"
+#include "utils/rel.h"
+#include "access/htup_details.h"
+#include "catalog/indexing.h"
 
 // TODO - refactor into get_oid_from_table, and put back into 
 // catalog/namespace.c
-// ExecDropStmt
 
 Oid
 get_alert_oid(List *name, bool missing_ok)
@@ -77,6 +80,81 @@ get_alert_oid(List *name, bool missing_ok)
 	return alertoid;
 }
 
+static AlertNotifyFunc alert_func = 0;
+
+static void
+notify_alert_worker()
+{
+	if (!alert_func)
+		return;
+
+	alert_func();
+}
+
+void
+set_notify_func(AlertNotifyFunc fn)
+{
+	alert_func = fn;
+}
+
+typedef void (*PluginInitFunc)(void);
+
+static void load_plugin(const char* plugin)
+{
+	PluginInitFunc plugin_init;
+	plugin_init = load_external_function(plugin, "_PG_init", false, NULL);
+}
+
+void check_plugin()
+{
+	// XXX - do this better
+	
+	if (alert_func)
+	{
+		return;
+	}
+
+	load_plugin("pipeline_push");
+
+	if (!alert_func)
+	{
+		elog(ERROR, "could not load pipeline push plugin");
+	}
+}
+
+void
+DefineAlert(CreateAlertStmt *stmt, const char* query_str)
+{
+	Oid result;
+	HeapTuple tup;
+	bool nulls[Natts_pipeline_alert];
+	Datum values[Natts_pipeline_alert];
+	NameData name_data;
+	Relation pipeline_alert;
+	Oid namespace;
+	RangeVar *alert = stmt->into->rel;
+	namespace = RangeVarGetCreationNamespace(alert);
+
+	check_plugin();
+
+	pipeline_alert = heap_open(PipelineAlertRelationId, AccessExclusiveLock);
+	namestrcpy(&name_data, alert->relname);
+
+	values[Anum_pipeline_alert_name - 1] = NameGetDatum(&name_data);
+	values[Anum_pipeline_alert_namespace - 1] = ObjectIdGetDatum(namespace);
+	values[Anum_pipeline_alert_query - 1] = CStringGetTextDatum(query_str);
+
+	MemSet(nulls, 0, sizeof(nulls));
+	tup = heap_form_tuple(pipeline_alert->rd_att, values, nulls);
+
+	result = simple_heap_insert(pipeline_alert, tup);
+	CatalogUpdateIndexes(pipeline_alert, tup);
+	CommandCounterIncrement();
+
+	notify_alert_worker(); // extension will increment a shmem ctr on xact fin
+	heap_close(pipeline_alert, NoLock); // unlock after transaction
+}
+
 void
 RemoveAlertById(Oid oid)
 {
@@ -95,6 +173,8 @@ RemoveAlertById(Oid oid)
 
 	ReleaseSysCache(tuple);
 	CommandCounterIncrement();
+
+	notify_alert_worker(); // extension will increment a shmem ctr on xact fin
 	heap_close(pipeline_alert, NoLock); // drop after xact
 }
 
